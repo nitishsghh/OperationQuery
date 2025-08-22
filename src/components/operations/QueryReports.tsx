@@ -95,6 +95,7 @@ const getAllQueries = (allQueries: ReportQuery[]): ReportQuery[] => {
   
   const individual: ReportQuery[] = [];
   
+  // First, collect all individual queries with their submission dates
   allQueries.forEach(queryGroup => {
     if (queryGroup && Array.isArray(queryGroup.queries)) {
       queryGroup.queries.forEach((query: any, index: number) => {
@@ -122,12 +123,20 @@ const getAllQueries = (allQueries: ReportQuery[]): ReportQuery[] => {
           resolvedBy: query.resolvedBy || queryGroup.resolvedBy,
           resolutionReason: query.resolutionReason || queryGroup.resolutionReason,
           assignedTo: assignedTo, // Include assignedTo field for OTC/Deferral actions
-          queryIndex: index + 1,
+          queryIndex: 0, // Will be set after sorting
           queryText: query.text,
           queryId: query.id || `${index}`
         } as ReportQuery);
       });
     }
+  });
+  
+  // Sort all queries by submission date (oldest first) to assign sequential numbers chronologically
+  individual.sort((a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime());
+  
+  // Now assign sequential query numbers based on chronological order
+  individual.forEach((query, index) => {
+    query.queryIndex = index + 1;
   });
   
   return individual;
